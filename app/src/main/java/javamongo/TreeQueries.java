@@ -10,9 +10,7 @@ import org.bson.conversions.Bson;
 
 import com.google.gson.*;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -74,78 +72,71 @@ public class TreeQueries {
      * geom
      */
     public double[] geomFinder() {
-        double geomMaxLong = Double.MIN_VALUE, geomMaxLat = Double.MIN_VALUE;
-        double geomMinLong = Double.MIN_VALUE, geomMinLat = Double.MAX_VALUE;
-
-        Bson match = match(and(
-            exists("geom"), 
-            lt("geom.coordinates.0", -122.5), 
-            gt("geom.coordinates.0", -123.5),
-            gt("geom.coordinates.1", 49), 
-            lt("geom.coordinates.1", 50)
-            ));
-        Bson sort = sort(ascending("geom.coordinates.0"));
-        Bson limit = limit(1);
-        Bson project = project(fields(include("geom.coordinates"), excludeId()));
-        Bson unwind = unwind("$geom.coordinates");
-        
+        Bson sort = null;
+        AggregateIterable<Document> geomCursor = null;
         Document doc = null;
-        //get geomMinLong
-        AggregateIterable<Document> geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
-            match, sort, limit, project, unwind)
-            );
-        doc = geomCursor.first();
-        Document dbl = (Document) doc.get("geom");
-        String str = dbl.toJson();
-        JsonObject jsonObject = JsonParser.parseString(str).getAsJsonObject();
-        geomMinLong = jsonObject.get("coordinates").getAsDouble();
 
-        //get geomMaxLong
+        // get geomMinLong
+        sort = sort(ascending("geom.coordinates.0"));
+        geomCursor = geomFinderHelper(sort);
+        doc = geomCursor.first();
+        double geomMinLong = getCoordinate(doc);
+
+        // get geomMaxLong
         sort = sort(descending("geom.coordinates.0"));
-        geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
-            match, sort, limit, project, unwind)
-            );
+        geomCursor = geomFinderHelper(sort);
         doc = geomCursor.first();
+        double geomMaxLong = getCoordinate(doc);
 
-        dbl = (Document) doc.get("geom");
-        str = dbl.toJson();
-        jsonObject = JsonParser.parseString(str).getAsJsonObject();
-        geomMaxLong = jsonObject.get("coordinates").getAsDouble();
-
-        //get geomMinLat
+        // get geomMinLat
         sort = sort(ascending("geom.coordinates.1"));
-        geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
-            match, sort, limit, project, unwind)
-            );
+        geomCursor = geomFinderHelper(sort);
 
-        
         Iterator<Document> it = geomCursor.iterator();
-        while(it.hasNext()){
-           doc = it.next();
+        while (it.hasNext()) {
+            doc = it.next();
         }
-        dbl = (Document) doc.get("geom");
-        str = dbl.toJson();
-        jsonObject = JsonParser.parseString(str).getAsJsonObject();
-        geomMinLat = jsonObject.get("coordinates").getAsDouble();
 
-        //get geomMaxLat
+        double geomMinLat = getCoordinate(doc);
+
+        // get geomMaxLat
         sort = sort(descending("geom.coordinates.1"));
-        geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
-            match, sort, limit, project, unwind)
-            );
+        geomCursor = geomFinderHelper(sort);
 
         it = geomCursor.iterator();
-        while(it.hasNext()){
-           doc = it.next();
+        while (it.hasNext()) {
+            doc = it.next();
         }
 
-        dbl = (Document) doc.get("geom");
-        str = dbl.toJson();
-        jsonObject = JsonParser.parseString(str).getAsJsonObject();
-        geomMaxLat = jsonObject.get("coordinates").getAsDouble();
+        double geomMaxLat = getCoordinate(doc);
 
         double[] result = { geomMaxLong, geomMinLong, geomMaxLat, geomMinLat };
         return result;
+    }
+
+    private AggregateIterable<Document> geomFinderHelper(Bson sort) {
+        // Vancouver area
+        Bson match = match(and(
+                exists("geom"),
+                lt("geom.coordinates.0", -122.5),
+                gt("geom.coordinates.0", -123.5),
+                gt("geom.coordinates.1", 49),
+                lt("geom.coordinates.1", 50)));
+        Bson limit = limit(1);
+        Bson project = project(fields(include("geom.coordinates"), excludeId()));
+        Bson unwind = unwind("$geom.coordinates");
+
+        AggregateIterable<Document> geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
+                match, sort, limit, project, unwind));
+
+        return geomCursor;
+    }
+
+    private double getCoordinate(Document doc) {
+        Document dbl = (Document) doc.get("geom");
+        String str = dbl.toJson();
+        JsonObject jsonObject = JsonParser.parseString(str).getAsJsonObject();
+        return jsonObject.get("coordinates").getAsDouble();
     }
 
 }
