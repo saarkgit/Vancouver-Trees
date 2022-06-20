@@ -39,10 +39,15 @@ public class App {
             
             TreeQueries tq = new TreeQueries(treeDB);
             // tq.groupByFriendlyName();
-            double[] arr = tq.geomFinder();
-            for (double d : arr) {
-                System.out.println(d);
-            }
+            // double[] arr = tq.geomFinder();
+            // for (double d : arr) {
+            //     System.out.println(d);
+            // }
+
+            System.out.println("Please enter a width and height: ");
+            int width = sc.nextInt();
+            int height = sc.nextInt();
+            tq.friendlyNameBySection(width, height);
             
 
             
