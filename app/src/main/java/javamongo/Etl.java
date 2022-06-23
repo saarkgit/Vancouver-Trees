@@ -25,26 +25,40 @@ public class Etl {
         updateMapColl = updateMap;
     }
 
-    public void rebuildTreeFields() {
-        MongoCollection<Document> treeDataCollection = db.getCollection("Trees");
-        AggregateIterable<Document> fieldsList = treeDataCollection
-                .aggregate(Arrays.asList(new Document("$replaceRoot",
-                        new Document("newRoot", "$fields"))));
+    public void rebuildTreeFields(String coll, String newColl) {
+        MongoCollection<Document> treeDataCollection = db.getCollection(coll);
 
-        db.getCollection("TreeFields").drop();
-        MongoCollection<Document> treeFieldsData = db.getCollection("TreeFields");
+        AggregateIterable<Document> fieldsList = null;
+        MongoCollection<Document> finalColl = null;
+        boolean treesColl = coll.equals("Trees");
+
+        if (treesColl) {
+            fieldsList = treeDataCollection.aggregate(Arrays.asList(new Document("$replaceRoot",
+                    new Document("newRoot", "$fields"))));
+
+            db.getCollection(newColl).drop();
+            finalColl = db.getCollection(newColl);
+        } else {
+            fieldsList = treeDataCollection.aggregate(Arrays.asList(new Document("$project",
+                    new Document("a", 0))));
+
+            db.getCollection(newColl).drop();
+            finalColl = db.getCollection(newColl);
+        }
 
         List<Document> listOfFields = new ArrayList<>();
 
-        MongoCollection<Document> friendlyNameMapColl = db.getCollection("friendlyMap");
-        if (friendlyNameMapColl.countDocuments() > 0) {
-            FindIterable<Document> mapEntrys = friendlyNameMapColl.find();
+        if (treesColl) {
+            MongoCollection<Document> friendlyNameMapColl = db.getCollection("friendlyMap");
+            if (friendlyNameMapColl.countDocuments() > 0) {
+                FindIterable<Document> mapEntrys = friendlyNameMapColl.find();
 
-            for (Document document : mapEntrys) {
-                map.put(document.get("key").toString(), document.get("value").toString());
+                for (Document document : mapEntrys) {
+                    map.put(document.get("key").toString(), document.get("value").toString());
+                }
             }
         }
-        
+
         for (Document document : fieldsList) {
             String genus = document.get("genus_name").toString();
             String common = document.get("common_name").toString();
@@ -55,9 +69,9 @@ public class Etl {
             listOfFields.add(document);
         }
 
-        treeFieldsData.insertMany(listOfFields);
+        finalColl.insertMany(listOfFields);
 
-        if(updateMapColl) {
+        if (updateMapColl) {
             rebuildTreeFieldsMap();
         }
     }

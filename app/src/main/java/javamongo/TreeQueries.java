@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import static java.util.Arrays.asList;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -14,7 +13,6 @@ import com.google.gson.*;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.geojson.*;
 
 import static com.mongodb.client.model.Sorts.*;
 import static com.mongodb.client.model.Filters.*;
@@ -58,24 +56,12 @@ public class TreeQueries {
         db.getCollection("treesInSection").drop();
 
         double[] corners = getBoundingCoordinates(); // { geomMinLong, geomMinLat, geomMaxLong, geomMaxLat }
-        for (double d : corners) {
-            System.out.println(d);
-        }
+        // for (double d : corners) {
+        //     System.out.println(d);
+        // }
 
-        // Bson match = match(and(
-        // exists("geom"),
-        // geoWithinBox("geom.coordinates", corners[1], corners[3], corners[0],
-        // corners[2])));
         Bson match = null;
         Bson group = group("$friendly_name", Accumulators.sum("count", 1));
-        // Polygon boundingBox = new Polygon(Arrays.asList(
-        // new Position(corners[1], corners[3]),
-        // new Position(corners[1], corners[2]),
-        // new Position(corners[0], corners[2]),
-        // new Position(corners[0], corners[3]),
-        // new Position(corners[1], corners[3])));
-        // Bson geoWithin = geoWithinBox("geom.coordinates", corners[1], corners[3],
-        // corners[0], corners[2]);
 
         List<Document> allBoxesDocs = new ArrayList<>();
         double[] sectionBox = { 0, 0, 0, 0 };
@@ -112,49 +98,34 @@ public class TreeQueries {
                 boxDoc.append("section_x", i);
                 boxDoc.append("section_y", j);
                 boxDoc.append("trees_by_section", FNInBoxDocs);
-                // for (Document document : FNInBoxDocs) {
-                // boxDoc.append("trees_by_section", asList(document));
-                // // boxDoc.append("trees_by_section", document);
-                // }
                 allBoxesDocs.add(boxDoc);
             }
 
         }
 
-        // for (double d : sectionBox) {
-
-        // }
-
-        // AggregateIterable<Document> sectionCursor = treeFieldsCollection.aggregate(
-        // Arrays.asList(match, group));
-
-        // for (Document document : sectionCursor) {
-        // FNInBoxDocs.add(document);
-        // }
-
         db.getCollection("treesInSection").insertMany(allBoxesDocs);
     }
 
-    public double[] getBoundingCoordinates() {
+    private double[] getBoundingCoordinates() {
         Bson sort = null;
         AggregateIterable<Document> geomCursor = null;
         Document doc = null;
 
         // get geomMinLong
         sort = sort(ascending("geom.coordinates.0"));
-        geomCursor = boudningCoordHelper(sort);
+        geomCursor = boundingCoordHelper(sort);
         doc = geomCursor.first();
         double geomMinLong = getCoordinate(doc);
 
         // get geomMaxLong
         sort = sort(descending("geom.coordinates.0"));
-        geomCursor = boudningCoordHelper(sort);
+        geomCursor = boundingCoordHelper(sort);
         doc = geomCursor.first();
         double geomMaxLong = getCoordinate(doc);
 
         // get geomMinLat
         sort = sort(ascending("geom.coordinates.1"));
-        geomCursor = boudningCoordHelper(sort);
+        geomCursor = boundingCoordHelper(sort);
 
         Iterator<Document> it = geomCursor.iterator();
         while (it.hasNext()) {
@@ -165,7 +136,7 @@ public class TreeQueries {
 
         // get geomMaxLat
         sort = sort(descending("geom.coordinates.1"));
-        geomCursor = boudningCoordHelper(sort);
+        geomCursor = boundingCoordHelper(sort);
 
         it = geomCursor.iterator();
         while (it.hasNext()) {
@@ -178,7 +149,7 @@ public class TreeQueries {
         return result;
     }
 
-    private AggregateIterable<Document> boudningCoordHelper(Bson sort) {
+    private AggregateIterable<Document> boundingCoordHelper(Bson sort) {
         // Vancouver area
         Bson match = match(and(
                 exists("geom"),

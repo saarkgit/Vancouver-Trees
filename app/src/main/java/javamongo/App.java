@@ -26,23 +26,19 @@ public class App {
             MongoClient mongoClient = MongoClients.create(uri);
             MongoDatabase treeDB = mongoClient.getDatabase("VancouverOpenData_Trees");
             
-            // System.out.println("Do you want to re-import the data?");
-            // String reimportData = sc.next();
+            System.out.println("Do you want to re-import the data? (yes/no)");
+            String reimportData = sc.next();
             
-            // if (reimportData.toLowerCase().equals("yes")) {
-            //     System.out.println("Do you want to update the map?");
-            //     String updateMap = sc.next();
-            //     Boolean update = (updateMap.toLowerCase().equals("yes")) ? true :  false;
-            //     Etl etl = new Etl(treeDB, update);
-            //     etl.rebuildTreeFields();
-            // }
+            if (reimportData.toLowerCase().equals("yes")) {
+                System.out.println("Do you want to update the map? (yes/no)");
+                String updateMap = sc.next();
+                Boolean update = (updateMap.toLowerCase().equals("yes")) ? true :  false;
+                Etl etl = new Etl(treeDB, update);
+                etl.rebuildTreeFields("Trees", "TreeFields");
+            }
             
             TreeQueries tq = new TreeQueries(treeDB);
-            // tq.groupByFriendlyName();
-            // double[] arr = tq.geomFinder();
-            // for (double d : arr) {
-            //     System.out.println(d);
-            // }
+            tq.groupByFriendlyName();
 
             System.out.println("Please enter a width and height: ");
             int width = sc.nextInt();
