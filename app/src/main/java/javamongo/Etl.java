@@ -60,13 +60,17 @@ public class Etl {
         }
 
         for (Document document : fieldsList) {
-            String genus = document.get("genus_name").toString();
-            String common = document.get("common_name").toString();
-            String friendly = getFriendlyName(genus, common);
-            String id = document.get("tree_id").toString();
-            document.append("_id", id);
-            document.append("friendly_name", friendly);
-            listOfFields.add(document);
+            if (document.get("genus_name") != null && !document.get("genus_name").toString().isEmpty()
+                    && document.get("common_name") != null
+                    && !document.get("common_name").toString().isEmpty() && document.get("tree_id") != null) {
+                String genus = document.get("genus_name").toString();
+                String common = document.get("common_name").toString();
+                String friendly = getFriendlyName(genus, common);
+                String id = document.get("tree_id").toString();
+                document.append("_id", id);
+                document.append("friendly_name", friendly);
+                listOfFields.add(document);
+            }
         }
 
         finalColl.insertMany(listOfFields);

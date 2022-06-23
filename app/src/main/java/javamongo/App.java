@@ -14,10 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
-
     public static void main(String[] args) {
         String uri = "mongodb://localhost:27017/";
         Scanner sc = new Scanner(System.in);
@@ -25,18 +21,18 @@ public class App {
         try {
             MongoClient mongoClient = MongoClients.create(uri);
             MongoDatabase treeDB = mongoClient.getDatabase("VancouverOpenData_Trees");
-            
+
             System.out.println("Do you want to re-import the data? (yes/no)");
             String reimportData = sc.next();
-            
+
             if (reimportData.toLowerCase().equals("yes")) {
                 System.out.println("Do you want to update the map? (yes/no)");
                 String updateMap = sc.next();
-                Boolean update = (updateMap.toLowerCase().equals("yes")) ? true :  false;
+                Boolean update = (updateMap.toLowerCase().equals("yes")) ? true : false;
                 Etl etl = new Etl(treeDB, update);
                 etl.rebuildTreeFields("Trees", "TreeFields");
             }
-            
+
             TreeQueries tq = new TreeQueries(treeDB);
             tq.groupByFriendlyName();
 
@@ -44,14 +40,12 @@ public class App {
             int width = sc.nextInt();
             int height = sc.nextInt();
             tq.friendlyNameBySection(width, height);
-            
 
-            
             // Gson gson = new GsonBuilder().setPrettyPrinting().create();
             // String prettyJsonString = gson.toJson(treeFieldsData.find().first());
             // System.out.println(prettyJsonString);
             // // System.out.println(treeFieldsData.find().first());
-            
+
         } catch (Exception e) {
             System.out.println("ERROR");
             System.out.println(e);
