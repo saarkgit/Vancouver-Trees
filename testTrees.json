@@ -86,5 +86,41 @@
     "_id": 11,
     "test_comment" : "Fields as K:V",
     "fields": 11
+  },
+  {
+    "_id": 12,
+    "test_comment" : "geom outside vancouver",
+    "fields": {
+      "genus_name": "FRAXINUS",
+      "common_name": "EUROPEAN ASH",
+      "tree_id": 12,
+      "geom": {
+        "coordinates": [-125.17067, 39.25875]
+      }
+    }
+  },
+  {
+    "_id": 13,
+    "test_comment" : "no coordinates",
+    "fields": {
+      "genus_name": "PRUNUS",
+      "common_name": "PISSARD PLUM",
+      "tree_id": 13,
+      "geom": {
+        "banana": [-125.17067, 39.25875]
+      }
+    }
+  },
+  {
+    "_id": 14,
+    "test_comment" : "Normal",
+    "fields": {
+      "genus_name": "MALUS",
+      "common_name": "COMMON APPLE",
+      "tree_id": 14,
+      "geom": {
+        "coordinates": [-123.18525, 49.25898]
+      }
+    }
   }
 ]

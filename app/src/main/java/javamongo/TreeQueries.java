@@ -23,17 +23,22 @@ import com.mongodb.client.model.*;
 
 public class TreeQueries {
     private MongoDatabase db;
-    private MongoCollection<Document> treeFieldsCollection;
+    private MongoCollection<Document> fieldsCollection;
 
-    TreeQueries(MongoDatabase mdb) {
+    TreeQueries(MongoDatabase mdb, String collection) {
         db = mdb;
-        treeFieldsCollection = db.getCollection("TreeFields");
+        fieldsCollection = db.getCollection(collection);
     }
 
+    // default case
     public void groupByFriendlyName() {
-        db.getCollection("friendlyNameCount").drop();
+        groupByFriendlyName("friendlyNameCount");
+    }
 
-        AggregateIterable<Document> friendlyNameCursor = treeFieldsCollection.aggregate(
+    public void groupByFriendlyName(String targetCollection) {
+        db.getCollection(targetCollection).drop();
+
+        AggregateIterable<Document> friendlyNameCursor = fieldsCollection.aggregate(
                 Arrays.asList(
                         Aggregates.group("$friendly_name", Accumulators.sum("count", 1)),
                         Aggregates.sort(orderBy(descending("count"), ascending("_id")))));
@@ -41,24 +46,27 @@ public class TreeQueries {
         List<Document> friendlyNames = new ArrayList<>();
 
         for (Document document : friendlyNameCursor) {
-            friendlyNames.add(document);
+            if(document.get("_id") != null)
+                friendlyNames.add(document);
         }
 
-        db.getCollection("friendlyNameCount").insertMany(friendlyNames);
+        db.getCollection(targetCollection).insertMany(friendlyNames);
     }
 
+    // default
     public void friendlyNameBySection(int n, int m) {
+        friendlyNameBySection(n, m, "treesInSection");
+    }
+
+    public void friendlyNameBySection(int n, int m, String targetCollection) {
         if (n <= 0 || m <= 0) {
             System.out.println("Please enter a value greater than 0");
             return;
         }
 
-        db.getCollection("treesInSection").drop();
+        db.getCollection(targetCollection).drop();
 
         double[] corners = getBoundingCoordinates(); // { geomMinLong, geomMinLat, geomMaxLong, geomMaxLat }
-        // for (double d : corners) {
-        //     System.out.println(d);
-        // }
 
         Bson match = null;
         Bson group = group("$friendly_name", Accumulators.sum("count", 1));
@@ -86,7 +94,7 @@ public class TreeQueries {
                                 sectionBox[2],
                                 sectionBox[3])));
 
-                AggregateIterable<Document> sectionCursor = treeFieldsCollection.aggregate(
+                AggregateIterable<Document> sectionCursor = fieldsCollection.aggregate(
                         Arrays.asList(match, group));
 
                 List<Document> FNInBoxDocs = new ArrayList<>();
@@ -103,7 +111,7 @@ public class TreeQueries {
 
         }
 
-        db.getCollection("treesInSection").insertMany(allBoxesDocs);
+        db.getCollection(targetCollection).insertMany(allBoxesDocs);
     }
 
     private double[] getBoundingCoordinates() {
@@ -161,7 +169,7 @@ public class TreeQueries {
         Bson project = project(fields(include("geom.coordinates"), excludeId()));
         Bson unwind = unwind("$geom.coordinates");
 
-        AggregateIterable<Document> geomCursor = treeFieldsCollection.aggregate(Arrays.asList(
+        AggregateIterable<Document> geomCursor = fieldsCollection.aggregate(Arrays.asList(
                 match, sort, limit, project, unwind));
 
         return geomCursor;

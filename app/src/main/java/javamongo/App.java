@@ -24,16 +24,16 @@ public class App {
 
             System.out.println("Do you want to re-import the data? (yes/no)");
             String reimportData = sc.next();
-
+            String fieldsColl = "TreeFields";
             if (reimportData.toLowerCase().equals("yes")) {
                 System.out.println("Do you want to update the map? (yes/no)");
                 String updateMap = sc.next();
                 Boolean update = (updateMap.toLowerCase().equals("yes")) ? true : false;
                 Etl etl = new Etl(treeDB, update);
-                etl.rebuildTreeFields("Trees", "TreeFields");
+                etl.rebuildTreeFields("Trees", fieldsColl);
             }
 
-            TreeQueries tq = new TreeQueries(treeDB);
+            TreeQueries tq = new TreeQueries(treeDB, fieldsColl);
             tq.groupByFriendlyName();
 
             System.out.println("Please enter a width and height: ");
