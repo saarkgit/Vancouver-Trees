@@ -26,48 +26,45 @@ public class Etl {
     }
 
     public void rebuildTreeFields(String coll, String newColl) {
+        db.getCollection(newColl).drop();
+        MongoCollection<Document> finalColl = db.getCollection(newColl);
         MongoCollection<Document> treeDataCollection = db.getCollection(coll);
 
-        AggregateIterable<Document> fieldsList = null;
-        MongoCollection<Document> finalColl = null;
-        boolean treesColl = coll.equals("Trees");
-
-        if (treesColl) {
-            fieldsList = treeDataCollection.aggregate(Arrays.asList(new Document("$replaceRoot",
-                    new Document("newRoot", "$fields"))));
-
-            db.getCollection(newColl).drop();
-            finalColl = db.getCollection(newColl);
-        } else {
-            fieldsList = treeDataCollection.aggregate(Arrays.asList(new Document("$project",
-                    new Document("a", 0))));
-
-            db.getCollection(newColl).drop();
-            finalColl = db.getCollection(newColl);
+        if (treeDataCollection.countDocuments() == 0) {
+            System.out.println("Source data collection is empty.");
+            return;
         }
+
+        Document match = new Document("$match",
+                new Document("fields.tree_id",
+                        new Document("$exists", 1)));
+        Document replaceRoot = new Document("$replaceRoot",
+                new Document("newRoot", "$fields"));
+
+        AggregateIterable<Document> fieldsList = treeDataCollection
+                .aggregate(Arrays.asList(match, replaceRoot));
 
         List<Document> listOfFields = new ArrayList<>();
 
-        if (treesColl) {
-            MongoCollection<Document> friendlyNameMapColl = db.getCollection("friendlyMap");
-            if (friendlyNameMapColl.countDocuments() > 0) {
-                FindIterable<Document> mapEntrys = friendlyNameMapColl.find();
+        String mapCollName = newColl + "friendlyMap";
+        MongoCollection<Document> friendlyNameMapColl = db.getCollection(mapCollName);
+        if (friendlyNameMapColl.countDocuments() > 0) {
+            FindIterable<Document> mapEntrys = friendlyNameMapColl.find();
 
-                for (Document document : mapEntrys) {
-                    map.put(document.get("key").toString(), document.get("value").toString());
-                }
+            for (Document document : mapEntrys) {
+                map.put(document.get("key").toString(), document.get("value").toString());
             }
         }
 
         for (Document document : fieldsList) {
-            if (document.get("genus_name") != null && !document.get("genus_name").toString().isEmpty()
-                    && document.get("common_name") != null
-                    && !document.get("common_name").toString().isEmpty() && document.get("tree_id") != null) {
-                String genus = document.get("genus_name").toString();
-                String common = document.get("common_name").toString();
-                String friendly = getFriendlyName(genus, common);
-                String id = document.get("tree_id").toString();
-                document.append("_id", id);
+            Object genus = document.get("genus_name");
+            Object common = document.get("common_name");
+            Object id = document.get("tree_id");
+            if (genus != null && !genus.toString().isEmpty() && common != null && !common.toString().isEmpty()
+                    && id != null) {
+                String friendly = getFriendlyName(genus.toString(), common.toString());
+                String docId = (!id.toString().isEmpty()) ? id.toString() : document.get("_id").toString();
+                document.append("_id", docId);
                 document.append("friendly_name", friendly);
                 listOfFields.add(document);
             }
@@ -76,7 +73,7 @@ public class Etl {
         finalColl.insertMany(listOfFields);
 
         if (updateMapColl) {
-            rebuildTreeFieldsMap();
+            rebuildTreeFieldsMap(mapCollName);
         }
     }
 
@@ -153,11 +150,9 @@ public class Etl {
         return treeFriendlyName;
     }
 
-    private void rebuildTreeFieldsMap() {
-        MongoCollection<Document> friendlyNameMapColl = db.getCollection("friendlyMap");
-
-        db.getCollection("friendlyMap").drop();
-        friendlyNameMapColl = db.getCollection("friendlyMap");
+    private void rebuildTreeFieldsMap(String collMapName) {
+        db.getCollection(collMapName).drop();
+        MongoCollection<Document> friendlyNameMapColl = db.getCollection(collMapName);
 
         List<Document> listOfNames = new ArrayList<>();
 

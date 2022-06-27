@@ -1,0 +1,90 @@
+[
+  {
+    "_id": 1,
+    "test_comment" : "Normal",
+    "fields": {
+      "genus_name": "PLATANUS",
+      "common_name": "LONDON PLANE TREE",
+      "tree_id": 1,
+      "geom": {
+        "coordinates": [-123.17067, 49.25875]
+      }
+    }
+  },
+  {
+    "_id": 2,
+    "test_comment" : "Normal",
+    "fields": {
+      "genus_name": "ACER",
+      "common_name": "NORWAY MAPLE",
+      "tree_id": 2
+    }
+  },
+  {
+    "_id": 3,
+    "test_comment" : "Empty"
+  },
+  {
+    "_id": 4,
+    "test_comment" : "Empty common",
+    "fields": {
+      "genus_name": "ACER",
+      "common_name": "",
+      "tree_id": 4
+    }
+  },
+  {
+    "_id": 5,
+    "test_comment" : "No common",
+    "fields": {
+      "genus_name": "ACER",
+      "tree_id": 5
+    }
+  },
+  {
+    "_id": 6,
+    "test_comment" : "Empty genus",
+    "fields": {
+      "genus_name": "",
+      "common_name": "NORWAY MAPLE",
+      "tree_id": 6
+    }
+  },
+  {
+    "_id": 7,
+    "test_comment" : "No genus",
+    "fields": {
+      "common_name": "NORWAY MAPLE",
+      "tree_id": 7
+    }
+  },
+  {
+    "_id": 8,
+    "test_comment" : "No common/genus",
+    "fields": {
+      "tree_id": 8
+    }
+  },
+  {
+    "_id": 9,
+    "test_comment" : "No tree_id",
+    "fields": {
+      "genus_name": "PLATANUS",
+      "common_name": "LONDON PLANE TREE"
+    }
+  },
+  {
+    "_id": 10,
+    "test_comment" : "Non English",
+    "fields": {
+      "genus_name": "木",
+      "common_name": "Français",
+      "tree_id": 10
+    }
+  },
+  {
+    "_id": 11,
+    "test_comment" : "Fields as K:V",
+    "fields": 11
+  }
+]
