@@ -29,7 +29,7 @@ public class TreeQueries {
     }
 
     public void groupByFriendlyName() {
-        groupByFriendlyName("friendlyNameCount");
+        groupByFriendlyName("FriendlyNameCount");
     }
 
     public void groupByFriendlyName(String targetCollection) {

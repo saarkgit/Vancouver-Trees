@@ -45,7 +45,7 @@ public class Etl {
 
         List<Document> listOfFields = new ArrayList<>();
 
-        String mapCollName = newColl + "friendlyMap";
+        String mapCollName = newColl + "FriendlyMap";
         MongoCollection<Document> friendlyNameMapColl = db.getCollection(mapCollName);
         if (friendlyNameMapColl.countDocuments() > 0) {
             FindIterable<Document> mapEntrys = friendlyNameMapColl.find();
