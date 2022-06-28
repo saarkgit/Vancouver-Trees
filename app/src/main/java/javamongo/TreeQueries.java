@@ -55,7 +55,7 @@ public class TreeQueries {
 
     // default
     public void friendlyNameBySection(int n, int m) {
-        friendlyNameBySection(n, m, "treesInSection");
+        friendlyNameBySection(n, m, "TreesInSection");
     }
 
     public void friendlyNameBySection(int n, int m, String targetCollection) {

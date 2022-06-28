@@ -19,6 +19,7 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import static com.mongodb.client.model.Filters.*;
@@ -97,14 +98,39 @@ public class Tests {
         assertEquals(0, count);
 
         testTQ.friendlyNameBySection(2, 3, "testTreesInSection");
-        count = testTreesInSection.countDocuments();
-        assertEquals(6, count);
+        long totalSectionsCount = testTreesInSection.countDocuments();
+        assertEquals(6, totalSectionsCount);
 
         AggregateIterable<Document> totalTrees = testTreesInSection.aggregate(
-                Arrays.asList(new Document("$group",
-                        new Document("_id", "total")
-                                .append("count", new Document("$sum", "$trees_by_section.0.count")))));
-        assertEquals(2, totalTrees.first().get("count"));
+                Arrays.asList(
+                        new Document("$match",
+                                new Document("trees_by_section.count",
+                                        new Document("$exists", 1)))));
+        
+        MongoCursor<Document> it = totalTrees.iterator();
+        int totalSectionsWithTreesCount = 0;
+        while (it.hasNext()) {
+            totalSectionsWithTreesCount++;
+            it.next();
+        }
+        assertEquals(2, totalSectionsWithTreesCount);
+
+        int appleCount = 0;
+        totalTrees = testTreesInSection.aggregate(
+                Arrays.asList(
+                        new Document("$match",
+                                new Document("trees_by_section.count",
+                                        new Document("$exists", 1))
+                                        .append("trees_by_section._id", "APPLE")
+                                        .append("trees_by_section.count", 1))));
+
+        it = totalTrees.iterator();
+        while (it.hasNext()) {
+            appleCount++;
+            it.next();
+        }
+        assertEquals(1, appleCount);
+
     }
 
     @Test
@@ -118,8 +144,8 @@ public class Tests {
     @AfterAll
     private static void cleanup() {
         testTreeDB.getCollection("testTreeFields").deleteOne(eq("_id", 100));
-        
-        //drop every test 
+
+        // drop every test
         // testTreeDB.getCollection("testTreesInSection").drop();
     }
 }
