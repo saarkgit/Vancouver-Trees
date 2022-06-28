@@ -10,24 +10,22 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 public class App {
     public static void main(String[] args) {
         String uri = "mongodb://localhost:27017/";
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
         try {
             MongoClient mongoClient = MongoClients.create(uri);
             MongoDatabase treeDB = mongoClient.getDatabase("VancouverOpenData_Trees");
 
             System.out.println("Do you want to re-import the data? (yes/no)");
-            String reimportData = sc.next();
+            String reimportData = scanner.next();
             String fieldsColl = "TreeFields";
+
             if (reimportData.toLowerCase().equals("yes")) {
                 System.out.println("Do you want to update the map? (yes/no)");
-                String updateMap = sc.next();
+                String updateMap = scanner.next();
                 Boolean update = (updateMap.toLowerCase().equals("yes")) ? true : false;
                 Etl etl = new Etl(treeDB, update);
                 etl.rebuildTreeFields("Trees", fieldsColl);
@@ -37,20 +35,15 @@ public class App {
             tq.groupByFriendlyName();
 
             System.out.println("Please enter a width and height: ");
-            int width = sc.nextInt();
-            int height = sc.nextInt();
+            int width = scanner.nextInt();
+            int height = scanner.nextInt();
             tq.friendlyNameBySection(width, height);
-
-            // Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            // String prettyJsonString = gson.toJson(treeFieldsData.find().first());
-            // System.out.println(prettyJsonString);
-            // // System.out.println(treeFieldsData.find().first());
 
         } catch (Exception e) {
             System.out.println("ERROR");
             System.out.println(e);
         }
 
-        sc.close();
+        scanner.close();
     }
 }

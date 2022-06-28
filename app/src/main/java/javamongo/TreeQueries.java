@@ -13,13 +13,11 @@ import com.google.gson.*;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
 import static com.mongodb.client.model.Sorts.*;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Aggregates.*;
 import static com.mongodb.client.model.Projections.*;
-
-import com.mongodb.client.model.*;
+import static com.mongodb.client.model.Accumulators.*;
 
 public class TreeQueries {
     private MongoDatabase db;
@@ -30,7 +28,6 @@ public class TreeQueries {
         fieldsCollection = db.getCollection(collection);
     }
 
-    // default case
     public void groupByFriendlyName() {
         groupByFriendlyName("friendlyNameCount");
     }
@@ -40,20 +37,19 @@ public class TreeQueries {
 
         AggregateIterable<Document> friendlyNameCursor = fieldsCollection.aggregate(
                 Arrays.asList(
-                        Aggregates.group("$friendly_name", Accumulators.sum("count", 1)),
-                        Aggregates.sort(orderBy(descending("count"), ascending("_id")))));
+                        group("$friendly_name", sum("count", 1)),
+                        sort(orderBy(descending("count"), ascending("_id")))));
 
         List<Document> friendlyNames = new ArrayList<>();
 
         for (Document document : friendlyNameCursor) {
-            if(document.get("_id") != null)
+            if (document.get("_id") != null)
                 friendlyNames.add(document);
         }
 
         db.getCollection(targetCollection).insertMany(friendlyNames);
     }
 
-    // default
     public void friendlyNameBySection(int n, int m) {
         friendlyNameBySection(n, m, "TreesInSection");
     }
@@ -69,9 +65,9 @@ public class TreeQueries {
         double[] corners = getBoundingCoordinates(); // { geomMinLong, geomMinLat, geomMaxLong, geomMaxLat }
 
         Bson match = null;
-        Bson group = group("$friendly_name", Accumulators.sum("count", 1));
+        Bson group = group("$friendly_name", sum("count", 1));
 
-        List<Document> allBoxesDocs = new ArrayList<>();
+        List<Document> allSectionsDocs = new ArrayList<>();
         double[] sectionBox = { 0, 0, 0, 0 };
         double xIncrement = (corners[2] - corners[0]) / n;
         double yIncrement = (corners[3] - corners[1]) / m;
@@ -97,21 +93,21 @@ public class TreeQueries {
                 AggregateIterable<Document> sectionCursor = fieldsCollection.aggregate(
                         Arrays.asList(match, group));
 
-                List<Document> FNInBoxDocs = new ArrayList<>();
+                List<Document> friendlyNameInBoxDocs = new ArrayList<>();
                 for (Document document : sectionCursor) {
-                    FNInBoxDocs.add(document);
+                    friendlyNameInBoxDocs.add(document);
                 }
 
-                Document boxDoc = new Document();
-                boxDoc.append("section_x", i);
-                boxDoc.append("section_y", j);
-                boxDoc.append("trees_by_section", FNInBoxDocs);
-                allBoxesDocs.add(boxDoc);
+                Document sectionDoc = new Document();
+                sectionDoc.append("section_x", i);
+                sectionDoc.append("section_y", j);
+                sectionDoc.append("trees_by_section", friendlyNameInBoxDocs);
+                allSectionsDocs.add(sectionDoc);
             }
 
         }
 
-        db.getCollection(targetCollection).insertMany(allBoxesDocs);
+        db.getCollection(targetCollection).insertMany(allSectionsDocs);
     }
 
     private double[] getBoundingCoordinates() {
@@ -176,8 +172,8 @@ public class TreeQueries {
     }
 
     private double getCoordinate(Document doc) {
-        Document dbl = (Document) doc.get("geom");
-        String str = dbl.toJson();
+        Document coordasDouble = (Document) doc.get("geom");
+        String str = coordasDouble.toJson();
         JsonObject jsonObject = JsonParser.parseString(str).getAsJsonObject();
         return jsonObject.get("coordinates").getAsDouble();
     }

@@ -36,8 +36,7 @@ public class Etl {
         }
 
         Document match = new Document("$match",
-                new Document("fields.tree_id",
-                        new Document("$exists", 1)));
+                new Document("fields.tree_id", new Document("$exists", 1)));
         Document replaceRoot = new Document("$replaceRoot",
                 new Document("newRoot", "$fields"));
 
@@ -60,8 +59,8 @@ public class Etl {
             Object genus = document.get("genus_name");
             Object common = document.get("common_name");
             Object id = document.get("tree_id");
-            if (genus != null && !genus.toString().isEmpty() && common != null && !common.toString().isEmpty()
-                    && id != null) {
+            if (genus != null && !genus.toString().isEmpty() && common != null
+                    && !common.toString().isEmpty() && id != null) {
                 String friendly = getFriendlyName(genus.toString(), common.toString());
                 String docId = (!id.toString().isEmpty()) ? id.toString() : document.get("_id").toString();
                 document.append("_id", docId);
