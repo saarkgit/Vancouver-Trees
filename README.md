@@ -11,7 +11,7 @@ I inputted the tree data in a mongoDB and then applied the ETL (Extract, Transfo
 Afterwards, utilizing the updated data, the user is asked for dimensions with which to overlay a `n x m` grid over the City of Vancouver and then each section is analyzed. The current code groups the trees by their friendly name, but any mongo query can be applied to each section.
 
 <br />
-<center>
-    <img src="squareOnMap.jpg" alt="square overlain on vancouver" text-align="center" width="75%" />
-</center>
+
+![square overlain on vancouver](squareOnMap.jpg#width:2%#center) 
+
 This is the box created from the coordinates of the westernmost, easternmost, northernmost, and southernmost trees in the collection. Afterwards the user's grid is created within this region and the query applied to each section.
