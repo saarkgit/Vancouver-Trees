@@ -12,10 +12,6 @@ Afterwards, utilizing the updated data, the user is asked for dimensions with wh
 
 <br />
 
-<img src="squareOnMap.jpg" alt="square overlain on vancouver"  style=
-    "display: block; 
-    margin-left: auto;
-    margin-right: auto;
-    width: 75%;"/>
+<img src="squareOnMap.jpg" alt="square overlain on vancouver" width=75%/>
 
 This is the box created from the coordinates of the westernmost, easternmost, northernmost, and southernmost trees in the collection. Afterwards the user's grid is created within this region and the query applied to each section.
