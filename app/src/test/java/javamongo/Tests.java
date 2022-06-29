@@ -191,9 +191,7 @@ public class Tests {
 
     @AfterAll
     private static void cleanup() {
-        // testTreeDB.getCollection("testTreeFields").deleteOne(eq("_id", 100));
-
-        // drop every test collection
+        // drop test collections
         testTreeDB.getCollection("testFriendlyNameCount").drop();
         testTreeDB.getCollection("testSubTreesFields").drop();
         testTreeDB.getCollection("testSubTreesFieldsFriendlyMap").drop();

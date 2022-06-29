@@ -8,7 +8,7 @@ This is a personal project I worked on to review and showcase my backend and dat
 
 I inputted the tree data in a mongoDB and then applied the ETL (Extract, Transform, Load) process to by moving up the sub-document with the important fields as primary keys and generated a `friendly_names` key using the **genus** and **common names** to combine the large diversity of trees into a simpler and more usable naming scheme. This was done by, for example, merging all species of spruce (NORWAY SPRUCE, SITKA SPRUCE, SPRUCE SPECIES, etc.) and making the _friendly name_ be "SPRUCE".
 
-Afterwards, utilizing the updated data, the user is asked for dimensions with which to overlay a `n x m` grid over the City of Vancouver and then each section is analyzed. The current code groups the trees by their friendly name, but any mongo query can be applied to each section.
+Afterwards, utilizing the updated data, the user is asked for dimensions with which to overlay an `n by m` grid over the City of Vancouver and then each section is analyzed. The current code groups the trees by their friendly name, but any mongo query can be applied to each section.
 
 <br />
 
