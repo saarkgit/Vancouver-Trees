@@ -42,7 +42,7 @@ public class Tests {
     }
 
     @Test
-    void erroneousDocuments() {
+    void validDocuments() {
         testEtl.rebuildTreeFields("testTrees", "testTreeFields");
         long count = testTreeDB.getCollection("testTreeFields").countDocuments();
         assertEquals(6, count);
@@ -63,7 +63,7 @@ public class Tests {
     }
 
     @Test
-    void erroneousGeomDocuments() {
+    void erroneousDocuments() {
         Document noFriendly = new Document("_id", 100);
         noFriendly.append("test_comment", "No Friendly Name");
         noFriendly.append("genus_name", "MUSA");

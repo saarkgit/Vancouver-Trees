@@ -19,12 +19,12 @@ public class App {
             MongoClient mongoClient = MongoClients.create(uri);
             MongoDatabase treeDB = mongoClient.getDatabase("VancouverOpenData_Trees");
 
-            System.out.println("Do you want to re-import the data? (yes/no)");
+            System.out.println("Are you using an updated Trees collection? (yes/no)");
             String reimportData = scanner.next();
             String fieldsColl = "TreeFields";
 
             if (reimportData.toLowerCase().equals("yes")) {
-                System.out.println("Do you want to update the map? (yes/no)");
+                System.out.println("Do you want to update the map collection? (yes/no)");
                 String updateMap = scanner.next();
                 Boolean update = (updateMap.toLowerCase().equals("yes")) ? true : false;
                 Etl etl = new Etl(treeDB, update);

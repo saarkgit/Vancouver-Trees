@@ -27,8 +27,8 @@ public class Etl {
 
     public void rebuildTreeFields(String coll, String newColl) {
         db.getCollection(newColl).drop();
-        MongoCollection<Document> finalColl = db.getCollection(newColl);
-        MongoCollection<Document> treeDataCollection = db.getCollection(coll);
+        MongoCollection<Document> finalColl = db.getCollection(newColl);        //target
+        MongoCollection<Document> treeDataCollection = db.getCollection(coll);  //source
 
         if (treeDataCollection.countDocuments() == 0) {
             System.out.println("Source data collection is empty.");
